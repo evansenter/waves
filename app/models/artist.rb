@@ -14,6 +14,30 @@ class Artist < ActiveRecord::Base
     Similarity.destroy_all(:similar_artist_id => record)
   end
   
+  def self.retrieve
+    180.times do
+      if artist = Artist.find_by_queried(false)
+        add_similar_to(artist.name, artist.mbid)
+        sleep 5
+      end
+    end
+  end
+  
+  def self.add_similar_to(name, mbid)
+    artist = find_or_create_by_mbid({
+      :name => name,
+      :mbid => mbid
+    })
+    
+    if (similar_artists = Last.similar_artists_for(artist.name)).present?
+      similar_artists.each do |similar_artist|
+        artist.similar_to(similar_artist[:name], similar_artist[:mbid], similar_artist[:match])
+      end
+    end
+  ensure
+    artist.update_attributes(:queried => true)
+  end
+  
   def similar_to(name, mbid, match, create_secondary_association = true)
     similarity = similarities.find_or_create_by_similar_artist_id({
       :match             => match,
