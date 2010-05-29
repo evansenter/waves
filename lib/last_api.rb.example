@@ -1,0 +1,4 @@
+module LastApi
+  KEY    = "API Key"
+  SECRET = "API Secret"
+end
