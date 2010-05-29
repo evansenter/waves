@@ -14,21 +14,24 @@ class Artist < ActiveRecord::Base
     Similarity.destroy_all(:similar_artist_id => record)
   end
   
-  def self.retrieve(duration = 1.hour, interval = 5.seconds)
-    (duration / interval).times do |count|
+  def self.retrieve(duration = 2.hours, interval = 2.5.seconds)
+    start_time = Time.now
+    
+    while start_time + duration > Time.now
       if artist = Artist.find_by_queried(false)
         add_similar_to(artist.name, artist.mbid)
         
-        stats((duration - interval * count) / 1.minute)
+        stats(artist.name, (start_time + duration - Time.now) / 1.minute)
         sleep interval.to_i
       end
     end
   end
   
-  def self.stats(time_remaining)
-    puts "%.2f%% queried (out of #{Artist.count} artists), appx. %d minutes remaining" % [
+  def self.stats(artist_name, time_remaining)
+    puts "%.2f%% queried (out of #{Artist.count} artists), appx. %d minutes remaining - added '%s'" % [
       100.0 * Artist.find_all_by_queried(true).count / Artist.count,
-      time_remaining
+      time_remaining,
+      artist_name
     ]
   end
   
