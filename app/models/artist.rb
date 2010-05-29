@@ -14,11 +14,11 @@ class Artist < ActiveRecord::Base
     Similarity.destroy_all(:similar_artist_id => record)
   end
   
-  def self.retrieve
-    180.times do
+  def self.retrieve(duration = 1.hour, interval = 5.seconds)
+    (duration / interval).times do
       if artist = Artist.find_by_queried(false)
         add_similar_to(artist.name, artist.mbid)
-        sleep 5
+        sleep interval
       end
     end
   end
