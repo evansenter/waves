@@ -15,18 +15,21 @@ class Artist < ActiveRecord::Base
   end
   
   def self.retrieve(duration = 1.hour, interval = 5.seconds)
-    (duration / interval).times do
+    (duration / interval).times do |count|
       if artist = Artist.find_by_queried(false)
         add_similar_to(artist.name, artist.mbid)
         
-        stats
+        stats((duration - interval * count) / 1.minute)
         sleep interval.to_i
       end
     end
   end
   
-  def self.stats
-    puts "%.2f%% queried (out of #{Artist.count} artists)" % (100.0 * Artist.find_all_by_queried(true).count / Artist.count)
+  def self.stats(time_remaining)
+    puts "%.2f%% queried (out of #{Artist.count} artists), appx. %d minutes remaining" % [
+      100.0 * Artist.find_all_by_queried(true).count / Artist.count,
+      time_remaining
+    ]
   end
   
   def self.add_similar_to(name, mbid)
