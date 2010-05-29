@@ -1,4 +1,6 @@
 class Artist < ActiveRecord::Base
+  include ActionView::Helpers::NumberHelper
+  
   has_many :similarities, :dependent => :destroy do
     def with(artist)
       first(:conditions => { :similar_artist_id => artist })
@@ -18,9 +20,15 @@ class Artist < ActiveRecord::Base
     (duration / interval).times do
       if artist = Artist.find_by_queried(false)
         add_similar_to(artist.name, artist.mbid)
-        sleep interval
+        
+        stats
+        sleep interval.to_i
       end
     end
+  end
+  
+  def self.stats
+    puts "%.2f%% queried (out of #{Artist.count} artists)" % (100.0 * Artist.find_all_by_queried(true).count / Artist.count)
   end
   
   def self.add_similar_to(name, mbid)
