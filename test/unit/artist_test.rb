@@ -2,6 +2,7 @@ require "test_helper"
 
 class ArtistTest < ActiveSupport::TestCase
   def setup
+    Artist.destroy_all
     @artist = Factory(:artist)
   end
   
@@ -62,5 +63,27 @@ class ArtistTest < ActiveSupport::TestCase
     
     assert_equal 0, Artist.find(similar_artist.id).similarities.with(@artist).match
     assert_equal 0, Artist.find(@artist.id).similarities.with(similar_artist).match
+  end
+  
+  test "similarities removed on destroy" do
+    assert_difference "Similarity.count", 2 do
+      assert_difference "Artist.count" do
+        @artist.similar_to("The Band", "secret_mbid_code", 1)
+      end
+    end
+    
+    similar_artist = @artist.similarities.first.similar_artist
+    assert similar_artist.similarities.with(@artist).present?
+    
+    assert_difference "Similarity.count", -2 do
+      @artist.destroy
+    end
+    
+    assert @artist.similarities.reload.empty?
+    assert similar_artist.similarities.empty?
+  end
+  
+  test "similarities with something that isn't similar doesn't return an association" do
+    assert @artist.similarities.with(Factory(:artist)).blank?
   end
 end
