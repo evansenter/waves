@@ -2,4 +2,4 @@
 db/*.sqlite3
 log/*.log
 tmp/**/*
-lib/last.rb
+lib/last_api.rb
