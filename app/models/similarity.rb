@@ -5,4 +5,6 @@ class Similarity < ActiveRecord::Base
   validates_presence_of     :artist_id, :similar_artist_id, :match
   validates_uniqueness_of   :similar_artist_id, :scope => :artist_id
   validates_numericality_of :match, :greater_than_or_equal_to => 0, :less_than_or_equal_to => 1, :allow_blank => true
+  
+  default_scope :order => "match DESC"
 end
