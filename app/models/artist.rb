@@ -3,6 +3,10 @@ class Artist < ActiveRecord::Base
     def with(artist)
       first(:conditions => { :similar_artist_id => artist })
     end
+    
+    def over(match)
+      all(:conditions => ["match >= ?", match])
+    end
   end
   
   has_many :similar_artists, :through => :similarities

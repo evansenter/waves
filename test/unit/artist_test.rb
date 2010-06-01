@@ -35,6 +35,22 @@ class ArtistTest < ActiveSupport::TestCase
     assert_equal 1, @artist.similarities.with(similar_artist).match
   end
   
+  test "similar_to with a new valid similar artist (not creating inverse association)" do
+    assert_difference "Similarity.count", 1 do
+      assert_difference "Artist.count" do
+        @artist.similar_to("The Band", "secret_mbid_code", 1, false)
+      end
+    end
+    
+    similar_artist = @artist.similar_artists.first
+    
+    assert_equal [],               similar_artist.similar_artists
+    assert_equal [similar_artist], @artist.similar_artists
+    
+    assert_nil      similar_artist.similarities.with(@artist)
+    assert_equal 1, @artist.similarities.with(similar_artist).match
+  end
+  
   test "similar_to with a new invalid similar artist" do
     assert_no_difference "Similarity.count" do
       assert_no_difference "Artist.count" do
@@ -85,5 +101,18 @@ class ArtistTest < ActiveSupport::TestCase
   
   test "similarities with something that isn't similar doesn't return an association" do
     assert @artist.similarities.with(Factory(:artist)).blank?
+  end
+  
+  test "similarities over_50 returns the matching similarities, ordered by match" do
+    similar_artist_1 = Factory(:artist)
+    similar_artist_2 = Factory(:artist)
+    similar_artist_3 = Factory(:artist)
+    
+    @artist.similar_to(similar_artist_1.name, similar_artist_1.mbid, 0.05)
+    @artist.similar_to(similar_artist_2.name, similar_artist_2.mbid, 0.5)
+    @artist.similar_to(similar_artist_3.name, similar_artist_3.mbid, 0.95)
+    
+    assert_equal [similar_artist_3, similar_artist_2], @artist.similarities.over(0.5).map(&:similar_artist)
+    assert_equal [],                                   @artist.similarities.over(0.99).map(&:similar_artist)
   end
 end
