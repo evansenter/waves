@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100529143008) do
+ActiveRecord::Schema.define(:version => 20100602171010) do
 
   create_table "artists", :force => true do |t|
     t.string   "name"
@@ -18,8 +18,6 @@ ActiveRecord::Schema.define(:version => 20100529143008) do
     t.datetime "updated_at"
     t.boolean  "queried",    :default => false
   end
-
-  add_index "artists", ["name"], :name => "index_artists_on_name"
 
   create_table "similarities", :force => true do |t|
     t.integer  "artist_id"
@@ -30,7 +28,6 @@ ActiveRecord::Schema.define(:version => 20100529143008) do
   end
 
   add_index "similarities", ["artist_id"], :name => "index_similarities_on_artist_id"
-  add_index "similarities", ["match"], :name => "index_similarities_on_match"
   add_index "similarities", ["similar_artist_id"], :name => "index_similarities_on_similar_artist_id"
 
 end
