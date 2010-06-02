@@ -22,7 +22,7 @@ ActiveRecord::Schema.define(:version => 20100602171010) do
   create_table "similarities", :force => true do |t|
     t.integer  "artist_id"
     t.integer  "similar_artist_id"
-    t.decimal  "match"
+    t.decimal  "score",             :precision => 10, :scale => 9
     t.datetime "created_at"
     t.datetime "updated_at"
   end

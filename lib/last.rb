@@ -7,7 +7,7 @@ module Last
         {
           :name  => extract(:name,  artist),
           :mbid  => extract(:mbid,  artist),
-          :match => extract(:match, artist)
+          :score => extract(:match, artist)
         }
       end
     end

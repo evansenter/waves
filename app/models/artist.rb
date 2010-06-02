@@ -4,8 +4,8 @@ class Artist < ActiveRecord::Base
       first(:conditions => { :similar_artist_id => artist })
     end
     
-    def over(match)
-      all(:conditions => ["match >= ?", match])
+    def over(score)
+      all(:conditions => ["score >= ?", score])
     end
   end
   
@@ -47,16 +47,16 @@ class Artist < ActiveRecord::Base
     
     if (similar_artists = Last.similar_artists_for(artist.name)).present?
       similar_artists.each do |similar_artist|
-        artist.similar_to(similar_artist[:name], similar_artist[:mbid], similar_artist[:match])
+        artist.similar_to(similar_artist[:name], similar_artist[:mbid], similar_artist[:score])
       end
     end
   ensure
     artist.update_attributes(:queried => true)
   end
   
-  def similar_to(name, mbid, match, create_secondary_association = true)
+  def similar_to(name, mbid, score, create_secondary_association = true)
     similarity = similarities.find_or_create_by_similar_artist_id({
-      :match             => match,
+      :score             => score,
       :similar_artist_id => Artist.find_or_create_by_mbid({
         :name => name,
         :mbid => mbid
@@ -64,8 +64,8 @@ class Artist < ActiveRecord::Base
     })
     
     if similarity.id.present?
-      similarity.update_attributes(:match => match)
-      similarity.similar_artist.similar_to(self.name, self.mbid, match, false) if create_secondary_association
+      similarity.update_attributes(:score => score)
+      similarity.similar_artist.similar_to(self.name, self.mbid, score, false) if create_secondary_association
     end
   end
 end

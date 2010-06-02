@@ -6,5 +6,5 @@ end
 Factory.define(:similarity) do |factory|
   factory.association(:artist)
   factory.association(:similar_artist, :factory => :artist)
-  factory.match(1)
+  factory.score(1)
 end

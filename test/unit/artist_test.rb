@@ -31,8 +31,8 @@ class ArtistTest < ActiveSupport::TestCase
     assert_equal [@artist],        similar_artist.similar_artists
     assert_equal [similar_artist], @artist.similar_artists
     
-    assert_equal 1, similar_artist.similarities.with(@artist).match
-    assert_equal 1, @artist.similarities.with(similar_artist).match
+    assert_equal 1, similar_artist.similarities.with(@artist).score
+    assert_equal 1, @artist.similarities.with(similar_artist).score
   end
   
   test "similar_to with a new valid similar artist (not creating inverse association)" do
@@ -48,7 +48,7 @@ class ArtistTest < ActiveSupport::TestCase
     assert_equal [similar_artist], @artist.similar_artists
     
     assert_nil      similar_artist.similarities.with(@artist)
-    assert_equal 1, @artist.similarities.with(similar_artist).match
+    assert_equal 1, @artist.similarities.with(similar_artist).score
   end
   
   test "similar_to with a new invalid similar artist" do
@@ -77,8 +77,8 @@ class ArtistTest < ActiveSupport::TestCase
     assert_equal [@artist],        similar_artist.similar_artists
     assert_equal [similar_artist], @artist.similar_artists
     
-    assert_equal 0, Artist.find(similar_artist.id).similarities.with(@artist).match
-    assert_equal 0, Artist.find(@artist.id).similarities.with(similar_artist).match
+    assert_equal 0, Artist.find(similar_artist.id).similarities.with(@artist).score
+    assert_equal 0, Artist.find(@artist.id).similarities.with(similar_artist).score
   end
   
   test "similarities removed on destroy" do
@@ -103,7 +103,7 @@ class ArtistTest < ActiveSupport::TestCase
     assert @artist.similarities.with(Factory(:artist)).blank?
   end
   
-  test "similarities over_50 returns the matching similarities, ordered by match" do
+  test "similarities over_50 returns the scoreing similarities, ordered by score" do
     similar_artist_1 = Factory(:artist)
     similar_artist_2 = Factory(:artist)
     similar_artist_3 = Factory(:artist)
