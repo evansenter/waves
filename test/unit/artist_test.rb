@@ -20,25 +20,9 @@ class ArtistTest < ActiveSupport::TestCase
   end
   
   test "similar_to with a new valid similar artist" do
-    assert_difference "Similarity.count", 2 do
-      assert_difference "Artist.count" do
-        @artist.similar_to("The Band", "secret_mbid_code", 1)
-      end
-    end
-    
-    similar_artist = @artist.similar_artists.first
-    
-    assert_equal [@artist],        similar_artist.similar_artists
-    assert_equal [similar_artist], @artist.similar_artists
-    
-    assert_equal 1, similar_artist.similarities.with(@artist).score
-    assert_equal 1, @artist.similarities.with(similar_artist).score
-  end
-  
-  test "similar_to with a new valid similar artist (not creating inverse association)" do
     assert_difference "Similarity.count", 1 do
       assert_difference "Artist.count" do
-        @artist.similar_to("The Band", "secret_mbid_code", 1, false)
+        @artist.similar_to("The Band", "secret_mbid_code", 1)
       end
     end
     
@@ -62,7 +46,7 @@ class ArtistTest < ActiveSupport::TestCase
   test "similar_to with an existing artist" do
     similar_artist = Factory(:artist)
     
-    assert_difference "Similarity.count", 2 do
+    assert_difference "Similarity.count", 1 do
       assert_no_difference "Artist.count" do
         @artist.similar_to(similar_artist.name, similar_artist.mbid, 1)
       end
@@ -74,24 +58,24 @@ class ArtistTest < ActiveSupport::TestCase
       end
     end
     
-    assert_equal [@artist],        similar_artist.similar_artists
+    assert_equal [],               similar_artist.similar_artists
     assert_equal [similar_artist], @artist.similar_artists
     
-    assert_equal 0, Artist.find(similar_artist.id).similarities.with(@artist).score
+    assert_nil      Artist.find(similar_artist.id).similarities.with(@artist)
     assert_equal 0, Artist.find(@artist.id).similarities.with(similar_artist).score
   end
   
   test "similarities removed on destroy" do
-    assert_difference "Similarity.count", 2 do
+    assert_difference "Similarity.count", 1 do
       assert_difference "Artist.count" do
         @artist.similar_to("The Band", "secret_mbid_code", 1)
       end
     end
     
     similar_artist = @artist.similarities.first.similar_artist
-    assert similar_artist.similarities.with(@artist).present?
+    assert similar_artist.similarities.with(@artist).blank?
     
-    assert_difference "Similarity.count", -2 do
+    assert_difference "Similarity.count", -1 do
       @artist.destroy
     end
     

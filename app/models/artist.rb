@@ -14,11 +14,7 @@ class Artist < ActiveRecord::Base
   validates_presence_of   :name, :mbid
   validates_uniqueness_of :mbid, :allow_blank => true
   
-  before_destroy do |record|
-    Similarity.destroy_all(:similar_artist_id => record)
-  end
-  
-  def self.retrieve(duration = 2.hours, interval = 2.5.seconds, display_stats = true)
+  def self.retrieve(duration = 1.day, interval = 1.second, display_stats = false)
     start_time = Time.now
     
     while start_time + duration > Time.now
@@ -29,11 +25,15 @@ class Artist < ActiveRecord::Base
         sleep interval.to_i
       end
     end
+  rescue EOFError, OpenURI::HTTPError => error
+    puts "Rescued #{error.class}, restarting Artist.retrieve"
+    stats(artist.name, (start_time + duration - Time.now) / 1.minute) unless display_stats
+    retry
   end
   
   def self.stats(artist_name, time_remaining)
     puts "%.2f%% queried (out of #{Artist.count} artists), appx. %d minutes remaining - added '%s'" % [
-      100.0 * Artist.find_all_by_queried(true).count / Artist.count,
+      100.0 * Artist.count(:conditions => { :queried => true }) / Artist.count,
       time_remaining,
       artist_name
     ]
@@ -63,9 +63,6 @@ class Artist < ActiveRecord::Base
       }).id
     })
     
-    if similarity.id.present?
-      similarity.update_attributes(:score => score)
-      similarity.similar_artist.similar_to(self.name, self.mbid, score, false) if create_secondary_association
-    end
+    similarity.update_attributes(:score => score) if similarity.id && similarity.score != score
   end
 end
